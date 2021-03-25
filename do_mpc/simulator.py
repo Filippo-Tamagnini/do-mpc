@@ -502,7 +502,8 @@ class Simulator(do_mpc.model.IteratedVariables):
         aux0 = self.sim_aux_num
         
         # Call measurement function
-        y0 = self.model._meas_fun(x_next, u0, z0, tvp0, p0, v0)
+        y0 = self.model._meas_fun(x0, u0, z0, tvp0, p0, v0)
+        y_next = self.model._meas_fun(x_next, u0, z0, tvp0, p0, v0)
         
         self.data.update(_x = x0)
         self.data.update(_u = u0)
@@ -510,13 +511,18 @@ class Simulator(do_mpc.model.IteratedVariables):
         self.data.update(_tvp = tvp0)
         self.data.update(_p = p0)
         self.data.update(_aux = aux0)
-        self.data.update(_time = t0)
+        self.data.update(_time = t0)        
         
-        # This stores the current measurement
-        self.data.update(_y = y0)              
+        # TODO: Change the stored measurement to y0 (requires changing MHE code)
+        # # This stores the current measurement (consistent with the model definition, but conflicts with the MHE implementation)
+        # self.data.update(_y = y0)       
+        # This stores the future measurement (inconsistent with the model definition, but works)
+        self.data.update(_y = y_next)       
 
         self._x0.master = x_next
         self._z0.master = z0
         self._u0.master = u0
-        self._t0 = self._t0 + self.t_step       
-        return y0.full()    
+        self._t0 = self._t0 + self.t_step  
+        
+        # TODO: Change the output to y0.full() 
+        return y_next.full()    
