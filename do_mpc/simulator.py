@@ -439,7 +439,7 @@ class Simulator(do_mpc.model.IteratedVariables):
 
         return x_new
 
-    def make_step(self, u0=None, v0=None, w0=None):
+    def make_step(self, u0, v0=None, w0=None):
         """Main method of the simulator class during control runtime. This method is called at each timestep
         and computes the next state for the current control input :py:obj:`u0`. If a control input is not 
         specified, the past input is held constant. The method returns the current measurement,
@@ -468,13 +468,10 @@ class Simulator(do_mpc.model.IteratedVariables):
         :return: y0
         :rtype: numpy.ndarray
         """
-        
-        if u0 is None:
-            u0 = self._u0
-        else:                
-            assert self.flags['setup'] == True, 'Simulator is not setup. Call simulator.setup() first.'
-            assert isinstance(u0, (np.ndarray, casadi.DM, structure3.DMStruct)), 'u0 is wrong input type. You have: {}'.format(type(u0))
-            assert u0.shape == self.model._u.shape, 'u0 has incorrect shape. You have: {}, expected: {}'.format(u0.shape, self.model._u.shape)
+              
+        assert self.flags['setup'] == True, 'Simulator is not setup. Call simulator.setup() first.'
+        assert isinstance(u0, (np.ndarray, casadi.DM, structure3.DMStruct)), 'u0 is wrong input type. You have: {}'.format(type(u0))
+        assert u0.shape == self.model._u.shape, 'u0 has incorrect shape. You have: {}, expected: {}'.format(u0.shape, self.model._u.shape)
 
         if w0 is None:
             w0 = self.model._w(0)
@@ -506,7 +503,7 @@ class Simulator(do_mpc.model.IteratedVariables):
         aux0 = self.sim_aux_num
         
         # Call measurement function
-        y0 = self.model._meas_fun(x0, u0, z0, tvp0, p0, v0)
+        y0 = self.model._meas_fun(x_next, u0, z0, tvp0, p0, v0)
         
         self.data.update(_x = x0)
         self.data.update(_u = u0)
@@ -521,6 +518,6 @@ class Simulator(do_mpc.model.IteratedVariables):
 
         self._x0.master = x_next
         self._z0.master = z0
-        self._u0 = u0
+        self._u0.master = u0
         self._t0 = self._t0 + self.t_step       
         return y0.full()    
