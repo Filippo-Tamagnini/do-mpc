@@ -441,8 +441,7 @@ class Simulator(do_mpc.model.IteratedVariables):
 
     def make_step(self, u0, v0=None, w0=None):
         """Main method of the simulator class during control runtime. This method is called at each timestep
-        and computes the next state for the current control input :py:obj:`u0`. If a control input is not 
-        specified, the past input is held constant. The method returns the current measurement,
+        and computes the next state or the current control input :py:obj:`u0`. The method returns the resulting measurement,
         as defined in :py:class:`do_mpc.model.Model.set_meas`.
 
         The initial state :py:attr:`x0` is stored as a class attribute. Use this attribute :py:attr:`x0` to change the initial state.
