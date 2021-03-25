@@ -464,7 +464,7 @@ class Simulator(do_mpc.model.IteratedVariables):
         :param w0: Additive process noise
         :type w0: numpy.ndarray (optional)
 
-        :return: y0_next
+        :return: y_next
         :rtype: numpy.ndarray
         """
               
