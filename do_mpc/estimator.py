@@ -650,7 +650,7 @@ class MHE(do_mpc.optimizer.Optimizer, Estimator):
 
 
         # Calculate stage cost:
-        stage_cost = 0
+        stage_cost = SX(0)
 
         if P_v is None:
             assert n_v == 0, 'Must pass weighting factor P_v, since you have measurement noise on some measurements (configured in model).'
