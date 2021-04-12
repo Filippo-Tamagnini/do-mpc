@@ -25,7 +25,38 @@ from casadi import *
 from casadi.tools import *
 import pdb
 import warnings
+from dataclasses import dataclass, field
+from typing import Union, List, Tuple
 
+@dataclass(unsafe_hash = True)
+class PlaceholderVariable:
+    # Mandatory attributes of the class
+    var_type: str = field(hash = True)
+    var_name: str = field(hash = True)
+    
+    shape:  Union[int,Tuple[int]] = field(default = 1, hash = False)    
+    sym_type: str = field(default = "SX", hash = False) 
+    
+    # Numerical entries for the variables
+    lb:         Union[float, casadi.DM, np.array] = field(default = float(-inf), hash = False)
+    ub:         Union[float, casadi.DM, np.array] = field(default = float(+inf), hash = False)
+    default:    Union[float, casadi.DM, np.array] = field(default = 0.0, hash = False)
+    
+    # Casadi symbolic variable
+    sym:    Union[casadi.SX, casadi.MX] = field(init = False, hash = False)
+    
+    def __post_init__(self):
+        if self.sym_type == "SX":
+            self.sym = SX.sym(self.var_name,self.shape)
+        elif self.sym_type == "MX":
+            self.sym = MX.sym(self.var_name,self.shape)
+        else:
+            raise ValueError("sym_type not in [""SX"", ""MX""]")
+        
+        #TODO: Check shape of the lb, ub, default attributes post-initialization
+        
+
+    
 
 class IteratedVariables:
     """ Class to initiate properties and attributes for iterated variables.
@@ -271,27 +302,20 @@ class Model:
         # Define private class attributes
 
         self._x = []
-
-        self._u =   [entry('default', shape=(0,0))]
-
-        self._z =   [entry('default', shape=(0,0))]
-
-        self._p =   [entry('default', shape=(0,0))]
-
+        self._u = [entry('default', shape=(0,0))]
+        self._z = [entry('default', shape=(0,0))]
+        self._p = [entry('default', shape=(0,0))]
         self._tvp = [entry('default', shape=(0,0))]
-
         self._aux = [entry('default', shape=(1,1))]
         self._aux_expression = [entry('default', expr=DM(0))]
-
-        self._y =   [entry('default', shape=(0,0))]
+        self._y = [entry('default', shape=(0,0))]
         self._y_expression = []
 
         # Process noise
         self._w = [entry('default', shape=(0,0))]
         # Measurement noise
-        self._v = [entry('default', shape=(0,0))]
-
-
+        self._v = [entry('default', shape=(0,0))]        
+        
         self.model_type = model_type
         self.symvar_type = 'SX'
 
@@ -631,9 +655,9 @@ class Model:
         """
         return self._getvar('_w')
 
-        @w.setter
-        def w(self, val):
-            raise Exception('Cannot set process noise directly.')
+    @w.setter
+    def w(self, val):
+        raise Exception('Cannot set process noise directly.')
 
 
     @property
@@ -661,9 +685,9 @@ class Model:
         """
         return self._getvar('_v')
 
-        @v.setter
-        def v(self, val):
-            raise Exception('Cannot set measurement noise directly.')
+    @v.setter
+    def v(self, val):
+        raise Exception('Cannot set measurement noise directly.')
 
 
     def set_variable(self, var_type, var_name, shape=(1,1)):
